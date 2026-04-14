@@ -2,14 +2,18 @@ using System.Text.Json;
 
 namespace DesktopIconAutoHide;
 
-internal readonly record struct AppSettings(int IdleSeconds, AppLanguageMode LanguageMode);
+internal readonly record struct AppSettings(
+    int IdleSeconds,
+    AppLanguageMode LanguageMode,
+    bool AutoStartEnabled);
 
 internal static class AppSettingsStore
 {
     internal const int DefaultIdleSeconds = 8;
-    internal const int MinIdleSeconds = 1;
+    internal const int MinIdleSeconds = 0;
     internal const int MaxIdleSeconds = 3600;
     internal const AppLanguageMode DefaultLanguageMode = AppLanguageMode.Auto;
+    internal const bool DefaultAutoStartEnabled = false;
 
     private static readonly string SettingsPath = Path.Combine(
         AppContext.BaseDirectory,
@@ -21,18 +25,19 @@ internal static class AppSettingsStore
         {
             if (!File.Exists(SettingsPath))
             {
-                return new AppSettings(DefaultIdleSeconds, DefaultLanguageMode);
+                return new AppSettings(DefaultIdleSeconds, DefaultLanguageMode, DefaultAutoStartEnabled);
             }
 
             var json = File.ReadAllText(SettingsPath);
             var model = JsonSerializer.Deserialize<SettingsFileModel>(json);
             var idleSeconds = ClampIdleSeconds(model?.IdleSeconds ?? DefaultIdleSeconds);
             var languageMode = ParseLanguageMode(model?.LanguageMode);
-            return new AppSettings(idleSeconds, languageMode);
+            var autoStartEnabled = model?.AutoStartEnabled ?? DefaultAutoStartEnabled;
+            return new AppSettings(idleSeconds, languageMode, autoStartEnabled);
         }
         catch
         {
-            return new AppSettings(DefaultIdleSeconds, DefaultLanguageMode);
+            return new AppSettings(DefaultIdleSeconds, DefaultLanguageMode, DefaultAutoStartEnabled);
         }
     }
 
@@ -42,7 +47,8 @@ internal static class AppSettingsStore
         var model = new SettingsFileModel
         {
             IdleSeconds = idleSeconds,
-            LanguageMode = ToStorageLanguageMode(settings.LanguageMode)
+            LanguageMode = ToStorageLanguageMode(settings.LanguageMode),
+            AutoStartEnabled = settings.AutoStartEnabled
         };
 
         var json = JsonSerializer.Serialize(model, new JsonSerializerOptions
@@ -87,5 +93,6 @@ internal static class AppSettingsStore
     {
         public int IdleSeconds { get; set; } = DefaultIdleSeconds;
         public string LanguageMode { get; set; } = "auto";
+        public bool AutoStartEnabled { get; set; } = DefaultAutoStartEnabled;
     }
 }

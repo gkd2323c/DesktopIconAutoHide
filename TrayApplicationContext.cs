@@ -12,6 +12,7 @@ internal sealed class TrayApplicationContext : ApplicationContext
     private readonly ToolStripMenuItem _settingsMenuItem;
     private readonly ToolStripMenuItem _exitMenuItem;
     private TimeSpan _idleThreshold;
+    private bool _autoStartEnabled;
 
     private Point _lastCursorPosition;
     private DateTime _lastMouseMoveUtc;
@@ -23,6 +24,8 @@ internal sealed class TrayApplicationContext : ApplicationContext
         var settings = AppSettingsStore.Load();
         LocalizedText.SetLanguageMode(settings.LanguageMode);
         _idleThreshold = TimeSpan.FromSeconds(settings.IdleSeconds);
+        _autoStartEnabled = settings.AutoStartEnabled;
+        _ = AutoStartManager.TrySetEnabled(_autoStartEnabled);
 
         _lastCursorPosition = Cursor.Position;
         _lastMouseMoveUtc = DateTime.UtcNow;
@@ -95,6 +98,11 @@ internal sealed class TrayApplicationContext : ApplicationContext
             return;
         }
 
+        if (!IsAutoHideEnabled())
+        {
+            return;
+        }
+
         var idleDuration = nowUtc - _lastMouseMoveUtc;
         if (!_iconsHidden && idleDuration >= _idleThreshold)
         {
@@ -134,9 +142,15 @@ internal sealed class TrayApplicationContext : ApplicationContext
     private string BuildIdleTooltipText() =>
         LocalizedText.BuildIdleTooltip((int)_idleThreshold.TotalSeconds);
 
+    private bool IsAutoHideEnabled() =>
+        _idleThreshold.TotalSeconds > 0;
+
     private void OpenSettings()
     {
-        using var form = new SettingsForm((int)_idleThreshold.TotalSeconds, LocalizedText.LanguageMode);
+        using var form = new SettingsForm(
+            (int)_idleThreshold.TotalSeconds,
+            LocalizedText.LanguageMode,
+            _autoStartEnabled);
         if (form.ShowDialog() != DialogResult.OK)
         {
             return;
@@ -144,7 +158,9 @@ internal sealed class TrayApplicationContext : ApplicationContext
 
         LocalizedText.SetLanguageMode(form.LanguageMode);
         _idleThreshold = TimeSpan.FromSeconds(form.IdleSeconds);
-        AppSettingsStore.Save(new AppSettings(form.IdleSeconds, form.LanguageMode));
+        _autoStartEnabled = form.AutoStartEnabled;
+        _ = AutoStartManager.TrySetEnabled(_autoStartEnabled);
+        AppSettingsStore.Save(new AppSettings(form.IdleSeconds, form.LanguageMode, _autoStartEnabled));
         RefreshLocalizedText();
 
         _lastCursorPosition = Cursor.Position;

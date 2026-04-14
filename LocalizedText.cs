@@ -40,9 +40,16 @@ internal static class LocalizedText
         IsChinese ? chinese : english;
 
     internal static string BuildIdleTooltip(int seconds) =>
-        IsChinese
-            ? $"\u684c\u9762\u56fe\u6807\u81ea\u52a8\u9690\u85cf\uff08{seconds} \u79d2\uff09"
-            : $"Desktop icons auto-hide ({seconds}s)";
+        seconds <= 0
+            ? AutoHideDisabledTooltip
+            : (IsChinese
+                ? $"\u684c\u9762\u56fe\u6807\u81ea\u52a8\u9690\u85cf\uff08{seconds} \u79d2\uff09"
+                : $"Desktop icons auto-hide ({seconds}s)");
+
+    internal static string AutoHideDisabledTooltip =>
+        Pick(
+            "\u81ea\u52a8\u9690\u85cf\u5df2\u5173\u95ed",
+            "Auto-hide disabled");
 
     internal static string HiddenTooltip =>
         Pick(
@@ -66,11 +73,16 @@ internal static class LocalizedText
 
     internal static string SettingsIdleLabel =>
         Pick(
-            "\u9f20\u6807\u9759\u6b62\u540e\u81ea\u52a8\u9690\u85cf\u684c\u9762\u56fe\u6807\uff08\u79d2\uff09\uff1a",
-            "Hide desktop icons after idle (seconds):");
+            "\u9f20\u6807\u9759\u6b62\u540e\u81ea\u52a8\u9690\u85cf\u684c\u9762\u56fe\u6807\uff08\u79d2\uff0c0=\u5173\u95ed\uff09\uff1a",
+            "Hide desktop icons after idle (seconds, 0=off):");
 
     internal static string SettingsLanguageLabel =>
         Pick("\u754c\u9762\u8bed\u8a00\uff1a", "Interface language:");
+
+    internal static string SettingsAutoStartLabel =>
+        Pick(
+            "\u5f00\u673a\u542f\u52a8\uff08\u767b\u5f55 Windows \u540e\u81ea\u52a8\u8fd0\u884c\uff09",
+            "Start with Windows (after sign in)");
 
     internal static string LanguageOptionAuto =>
         Pick("\u8ddf\u968f\u7cfb\u7edf", "System default");

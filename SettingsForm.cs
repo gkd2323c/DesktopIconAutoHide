@@ -6,14 +6,19 @@ internal sealed class SettingsForm : Form
 {
     private readonly NumericUpDown _idleSecondsInput;
     private readonly ComboBox _languageInput;
+    private readonly CheckBox _autoStartCheckbox;
 
     internal int IdleSeconds => (int)_idleSecondsInput.Value;
+    internal bool AutoStartEnabled => _autoStartCheckbox.Checked;
     internal AppLanguageMode LanguageMode =>
         _languageInput.SelectedItem is LanguageOption option
             ? option.Mode
             : AppLanguageMode.Auto;
 
-    internal SettingsForm(int currentIdleSeconds, AppLanguageMode currentLanguageMode)
+    internal SettingsForm(
+        int currentIdleSeconds,
+        AppLanguageMode currentLanguageMode,
+        bool currentAutoStartEnabled)
     {
         Text = LocalizedText.SettingsTitle;
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -21,7 +26,7 @@ internal sealed class SettingsForm : Form
         MaximizeBox = false;
         MinimizeBox = false;
         ShowInTaskbar = false;
-        ClientSize = new Size(380, 180);
+        ClientSize = new Size(420, 220);
 
         var titleLabel = new Label
         {
@@ -63,11 +68,19 @@ internal sealed class SettingsForm : Form
             .FirstOrDefault(x => x.Mode == currentLanguageMode)
             ?? _languageInput.Items[0];
 
+        _autoStartCheckbox = new CheckBox
+        {
+            AutoSize = true,
+            Location = new Point(15, 146),
+            Text = LocalizedText.SettingsAutoStartLabel,
+            Checked = currentAutoStartEnabled
+        };
+
         var saveButton = new Button
         {
             Text = LocalizedText.SettingsSave,
             DialogResult = DialogResult.OK,
-            Location = new Point(212, 136),
+            Location = new Point(252, 176),
             Width = 75
         };
 
@@ -75,7 +88,7 @@ internal sealed class SettingsForm : Form
         {
             Text = LocalizedText.SettingsCancel,
             DialogResult = DialogResult.Cancel,
-            Location = new Point(293, 136),
+            Location = new Point(333, 176),
             Width = 75
         };
 
@@ -83,6 +96,7 @@ internal sealed class SettingsForm : Form
         Controls.Add(_idleSecondsInput);
         Controls.Add(languageLabel);
         Controls.Add(_languageInput);
+        Controls.Add(_autoStartCheckbox);
         Controls.Add(saveButton);
         Controls.Add(cancelButton);
 

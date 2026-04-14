@@ -7,6 +7,7 @@
 - 仅在“当前焦点为桌面”时触发自动隐藏
 - 可配置静止隐藏时间（秒）
 - 支持中英文界面，且可手动切换语言
+- 支持可选开机启动（登录 Windows 后自动运行）
 - 配置持久化到程序目录下的 `settings.json`
 - 支持发布为单文件 `exe`
 
@@ -34,8 +35,9 @@ settings.json
 
 当前配置字段：
 
-- `IdleSeconds`: 鼠标静止秒数（1-3600）
+- `IdleSeconds`: 鼠标静止秒数（0-3600，`0` 表示关闭自动隐藏）
 - `LanguageMode`: `auto` / `zh` / `en`
+- `AutoStartEnabled`: `true` / `false`
 
 ## 发布
 
