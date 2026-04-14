@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-package:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore DesktopIconAutoHide.sln
+
+      - name: Build
+        run: dotnet build DesktopIconAutoHide.sln --configuration Release --no-restore
+
+      - name: Publish Single File
+        shell: pwsh
+        run: ./scripts/publish-singlefile.ps1 -Runtime win-x64 -Configuration Release
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DesktopIconAutoHide-win-x64-singlefile
+          path: artifacts/singlefile/win-x64/DesktopIconAutoHide.exe
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: ncipollo/release-action@v1
+        with:
+          tag: auto-v${{ github.run_number }}
+          name: Auto Release #${{ github.run_number }}
+          artifacts: artifacts/singlefile/win-x64/DesktopIconAutoHide.exe
+          generateReleaseNotes: true
+          allowUpdates: true
+          replacesArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
