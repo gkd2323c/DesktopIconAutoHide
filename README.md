@@ -59,6 +59,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\publish-singlefile.ps1
 .\artifacts\singlefile\win-x64\DesktopIconAutoHide.exe
 ```
 
+说明：默认是“安全缩小”（不启用 `Trim`，仅裁剪资源语言），更稳定。
+
+如需激进缩小（有运行风险）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\publish-singlefile.ps1 -SizeMode aggressive
+```
+
 ### 一键推送到 GitHub
 
 ```powershell
