@@ -59,6 +59,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\publish-singlefile.ps1
 .\artifacts\singlefile\win-x64\DesktopIconAutoHide.exe
 ```
 
+### 一键推送到 GitHub
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\push-github.ps1 -Message "feat: your message"
+```
+
+不传 `-Message` 时会自动生成提交信息。
+
 ### GitHub Actions 自动发布
 
 - `pull_request`：仅执行还原、构建、打包校验
