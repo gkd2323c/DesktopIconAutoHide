@@ -4,6 +4,7 @@ namespace DesktopIconAutoHide;
 
 internal sealed class TrayApplicationContext : ApplicationContext
 {
+    private readonly Icon _trayIcon;
     private readonly NotifyIcon _notifyIcon;
     private readonly System.Windows.Forms.Timer _timer;
     private readonly ToolStripMenuItem _showIconsMenuItem;
@@ -27,10 +28,11 @@ internal sealed class TrayApplicationContext : ApplicationContext
         _lastMouseMoveUtc = DateTime.UtcNow;
         var visibleState = DesktopIconController.AreDesktopIconsVisible();
         _iconsHidden = visibleState.HasValue && !visibleState.Value;
+        _trayIcon = LoadTrayIcon();
 
         _notifyIcon = new NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = _trayIcon,
             Visible = true,
             Text = BuildIdleTooltipText()
         };
@@ -180,7 +182,26 @@ internal sealed class TrayApplicationContext : ApplicationContext
 
         _notifyIcon.Visible = false;
         _notifyIcon.Dispose();
+        _trayIcon.Dispose();
 
         base.ExitThreadCore();
+    }
+
+    private static Icon LoadTrayIcon()
+    {
+        try
+        {
+            using var extracted = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            if (extracted is not null)
+            {
+                return (Icon)extracted.Clone();
+            }
+        }
+        catch
+        {
+            // ignore and fallback below
+        }
+
+        return (Icon)SystemIcons.Application.Clone();
     }
 }
